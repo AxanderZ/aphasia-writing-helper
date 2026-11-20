@@ -1,0 +1,52 @@
+{
+  "People": [
+    { "word": "wife",     "image": "images/wife.svg" },
+    { "word": "husband",  "image": "images/husband.svg" },
+    { "word": "son",      "image": "images/son.svg" },
+    { "word": "daughter", "image": "images/daughter.svg" },
+    { "word": "friend",   "image": "images/friend.svg" },
+    { "word": "doctor",   "image": "images/doctor.svg" },
+    { "word": "nurse",    "image": "images/nurse.svg" },
+    { "word": "me",       "image": "images/me.svg" }
+  ],
+  "Food": [
+    { "word": "coffee", "image": "images/coffee.svg" },
+    { "word": "water",  "image": "images/water.svg" },
+    { "word": "tea",    "image": "images/tea.svg" },
+    { "word": "juice",  "image": "images/juice.svg" },
+    { "word": "bread",  "image": "images/bread.svg" },
+    { "word": "soup",   "image": "images/soup.svg" },
+    { "word": "fruit",  "image": "images/fruit.svg" },
+    { "word": "milk",   "image": "images/milk.svg" }
+  ],
+  "Places": [
+    { "word": "home",     "image": "images/home.svg" },
+    { "word": "bathroom", "image": "images/bathroom.svg" },
+    { "word": "bed",      "image": "images/bed.svg" },
+    { "word": "kitchen",  "image": "images/kitchen.svg" },
+    { "word": "outside",  "image": "images/outside.svg" },
+    { "word": "hospital", "image": "images/hospital.svg" },
+    { "word": "shop",     "image": "images/shop.svg" },
+    { "word": "car",      "image": "images/car.svg" }
+  ],
+  "Feelings": [
+    { "word": "tired",  "image": "images/tired.svg" },
+    { "word": "happy",  "image": "images/happy.svg" },
+    { "word": "sad",    "image": "images/sad.svg" },
+    { "word": "pain",   "image": "images/pain.svg" },
+    { "word": "hungry", "image": "images/hungry.svg" },
+    { "word": "cold",   "image": "images/cold.svg" },
+    { "word": "hot",    "image": "images/hot.svg" },
+    { "word": "scared", "image": "images/scared.svg" }
+  ],
+  "Actions": [
+    { "word": "eat",   "image": "images/eat.svg" },
+    { "word": "drink", "image": "images/drink.svg" },
+    { "word": "sleep", "image": "images/sleep.svg" },
+    { "word": "go",    "image": "images/go.svg" },
+    { "word": "walk",  "image": "images/walk.svg" },
+    { "word": "wash",  "image": "images/wash.svg" },
+    { "word": "sit",   "image": "images/sit.svg" },
+    { "word": "help",  "image": "images/help-action.svg" }
+  ]
+}

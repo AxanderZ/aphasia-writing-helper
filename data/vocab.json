@@ -1,0 +1,41 @@
+{
+  "words": [
+    "i", "want", "need", "feel", "can", "you", "call", "where", "is",
+    "wife", "husband", "son", "daughter", "friend", "doctor", "nurse", "me",
+    "coffee", "water", "tea", "juice", "bread", "soup", "fruit", "milk",
+    "home", "bathroom", "bed", "kitchen", "outside", "hospital", "shop", "car",
+    "tired", "happy", "sad", "pain", "hungry", "cold", "hot", "scared",
+    "eat", "drink", "sleep", "go", "walk", "wash", "sit", "help",
+    "please", "now", "today", "thank", "hello", "yes", "no", "my", "the",
+    "to", "good", "come", "get", "food"
+  ],
+  "next": {
+    "i":    ["love", "am", "miss", "can't"],
+    "want": ["coffee", "water", "to", "help"],
+    "need": ["help", "my", "to", "water"],
+    "feel": ["tired", "good", "sad", "pain"],
+    "can you":   ["help", "call", "bring", "get"],
+    "could you": ["help", "call", "bring", "get"],
+    "will you":  ["help", "call", "bring", "get"],
+    "bring": ["me", "my", "water", "coffee"],
+    "call": ["my", "wife", "son", "doctor"],
+    "call my": ["wife", "son", "daughter", "doctor"],
+    "is":   ["my", "the"],
+    "where is my": ["phone", "wife", "glasses", "keys"],
+    "my":   ["wife", "phone", "son", "daughter"],
+    "love": ["you", "my", "it"],
+    "see":  ["you", "my", "the"],
+    "see you": ["soon", "later", "today", "tomorrow"],
+    "miss": ["you", "my", "home"],
+    "thank": ["you"],
+    "happy": ["birthday", "to", "now"],
+    "good": ["morning", "night", "idea"],
+    "head": ["hurts", "is", "pain"],
+    "come": ["home", "here", "back", "now"],
+    "come home": ["now", "soon", "please"],
+    "go":   ["home", "to", "out", "now"],
+    "how":  ["are", "is", "much"],
+    "how are": ["you"],
+    "_default": ["please", "now", "today", "thank you"]
+  }
+}

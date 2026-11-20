@@ -1,0 +1,8 @@
+[
+  { "id": "want",  "label": "I want",   "icon": "images/cup.svg" },
+  { "id": "need",  "label": "I need",   "icon": "images/help.svg" },
+  { "id": "feel",  "label": "I feel",   "icon": "images/heart.svg" },
+  { "id": "can",   "label": "Can you",  "icon": "images/question.svg" },
+  { "id": "call",  "label": "Call",     "icon": "images/phone.svg" },
+  { "id": "where", "label": "Where is", "icon": "images/pin.svg" }
+]

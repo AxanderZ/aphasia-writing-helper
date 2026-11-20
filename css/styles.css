@@ -1,0 +1,580 @@
+/* ==========================================================================
+   Writing Helper: styles
+   Ink on cool paper. The type box is the one bold element, with faint
+   writing-practice lines. Color appears only where it carries meaning:
+   picture categories follow the Fitzgerald Key used on AAC boards.
+   ========================================================================== */
+
+/* ---------- Tokens ---------- */
+:root {
+  /* Base */
+  --paper:        #F2F4F7;   /* page */
+  --sheet:        #FFFFFF;   /* type box, buttons */
+  --ink:          #15233A;   /* text, primary button */
+  --ink-soft:     #4A5870;   /* secondary text (6.4:1 on paper) */
+  --placeholder:  #5D6A82;   /* placeholder text (5.6:1 on white) */
+  --edge:         #C9D2DE;   /* button outlines */
+  --rule:         #DFE5ED;   /* writing lines in the type box */
+  --well:         #E9EDF3;   /* neutral icon wells */
+  --focus:        #1D5FD6;   /* caret, focus ring */
+
+  /* Fitzgerald Key colors: a light tint (surface) plus a deep tone (marks) */
+  --people-tint:   #FFF0B3;  --people-deep:   #9A7300;
+  --food-tint:     #FFE1CA;  --food-deep:     #B4560E;
+  --places-tint:   #E8E1FA;  --places-deep:   #6346B8;
+  --feelings-tint: #DAE8FF;  --feelings-deep: #2560C4;
+  --actions-tint:  #D9F0DD;  --actions-deep:  #2A7D3E;
+  --social-tint:   #FCE2EC;  --social-deep:   #B13A66;
+
+  /* Type */
+  --font: "Atkinson Hyperlegible Next", "Atkinson Hyperlegible", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --size-ui:   1.375rem;                           /* 22px: every button */
+  --size-box:  clamp(1.875rem, 1.2rem + 1.6vw, 2.5rem); /* 30–40px: the message */
+  --size-meta: 1.125rem;                           /* 18px: header */
+
+  /* Shape and space */
+  --radius-box:  28px;
+  --radius-tile: 18px;
+  --radius-pill: 999px;
+  --tap:   4rem;        /* 64px minimum target height */
+  --gap:   0.75rem;     /* between buttons */
+  --rail:  14rem;       /* left and right rail width */
+
+  --shadow-box: 0 1px 2px rgb(21 35 58 / 0.06), 0 24px 48px -24px rgb(21 35 58 / 0.28);
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* ---------- Base ---------- */
+*, *::before, *::after { box-sizing: border-box; }
+
+html { -webkit-text-size-adjust: 100%; }
+
+body {
+  margin: 0;
+  min-height: 100dvh;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font);
+  font-size: var(--size-ui);
+  line-height: 1.4;
+  display: flex;
+  flex-direction: column;
+}
+
+::selection { background: var(--feelings-tint); color: var(--ink); }
+
+button, textarea { font: inherit; color: inherit; }
+
+button {
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+ul[role="list"] { list-style: none; margin: 0; padding: 0; }
+
+img { display: block; max-width: 100%; }
+
+:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 3px;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px; height: 1px;
+  padding: 0; margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* ---------- Header ---------- */
+.masthead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1.25rem clamp(1rem, 3vw, 2.5rem);
+}
+
+.brand {
+  margin: 0;
+  font-weight: 700;
+  font-size: var(--size-ui);
+  letter-spacing: -0.01em;
+}
+
+.ai-status {
+  margin: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: var(--size-meta);
+  color: var(--ink-soft);
+}
+
+.ai-dot {
+  width: 0.625rem;
+  height: 0.625rem;
+  border-radius: 50%;
+  background: var(--edge);
+}
+.ai-status[data-state="loading"] .ai-dot {
+  background: var(--people-deep);
+  animation: ai-pulse 1.6s ease-in-out infinite;
+}
+.ai-status[data-state="ready"] .ai-dot { background: var(--actions-deep); }
+.ai-progress { font-variant-numeric: tabular-nums; min-width: 3ch; }
+.ai-progress:empty { display: none; }
+
+@keyframes ai-pulse {
+  50% { opacity: 0.35; }
+}
+
+/* ---------- Stage: the layout around the type box ---------- */
+.stage {
+  flex: 1;
+  width: 100%;
+  max-width: 90rem;
+  margin: 0 auto;
+  padding: 0.5rem clamp(1rem, 3vw, 2.5rem) 3rem;
+  display: grid;
+  gap: 1.5rem;
+  /* Narrow first: one column, in source order */
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-areas:
+    "compose"
+    "starters"
+    "categories"
+    "pictures";
+  align-content: start;
+}
+
+.compose    { grid-area: compose; }
+.starters   { grid-area: starters; }
+.categories { grid-area: categories; }
+.pictures   { grid-area: pictures; }
+
+/* Wide: starters | type box + pictures | categories */
+@media (min-width: 70rem) {
+  .stage {
+    grid-template-columns: var(--rail) minmax(0, 1fr) var(--rail);
+    grid-template-areas:
+      "starters compose  categories"
+      "starters pictures categories";
+    column-gap: clamp(1.5rem, 3vw, 3rem);
+    row-gap: 1.75rem;
+    align-content: center;
+  }
+  .starters, .categories { align-self: start; }
+}
+
+/* ---------- Type box ---------- */
+.compose {
+  display: grid;
+  gap: 1rem;
+}
+
+.typebox {
+  --line: 1.45em;          /* one line of message text; the writing lines follow it */
+  background: var(--sheet);
+  border: 2px solid var(--ink);
+  border-radius: var(--radius-box);
+  box-shadow: var(--shadow-box);
+  padding: 1.25rem 1.25rem 1rem 1.5rem;
+  display: grid;
+  gap: 1rem;
+  transition: box-shadow 200ms var(--ease-out), border-color 200ms var(--ease-out);
+}
+
+.typebox:focus-within {
+  border-color: var(--focus);
+  box-shadow: var(--shadow-box), 0 0 0 4px rgb(29 95 214 / 0.18);
+}
+
+.typebox textarea {
+  display: block;
+  width: 100%;
+  min-height: calc(var(--line) * 2);
+  max-height: calc(var(--line) * 4);
+  field-sizing: content;   /* grows with the message where supported */
+  resize: none;
+  border: 0;
+  outline: none;           /* the whole box shows focus instead */
+  padding: 0;
+  margin: 0;
+  background-color: transparent;
+  font-size: var(--size-box);
+  font-weight: 500;
+  line-height: var(--line);
+  letter-spacing: -0.005em;
+  color: var(--ink);
+  caret-color: var(--focus);
+  /* Writing-practice lines, one under each line of text */
+  background-image: linear-gradient(
+    to bottom,
+    transparent calc(var(--line) - 2px),
+    var(--rule) calc(var(--line) - 2px),
+    var(--rule) var(--line)
+  );
+  background-size: 100% var(--line);
+  background-attachment: local;
+}
+
+.typebox textarea::placeholder {
+  color: var(--placeholder);
+  opacity: 1;
+}
+
+/* Toolbar: Read aloud leads; the others are quieter */
+.toolbar {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--gap);
+}
+
+@media (min-width: 40rem) {
+  .toolbar { display: flex; flex-wrap: wrap; }
+  .tool--primary { margin-right: auto; }
+}
+
+.tool {
+  min-height: var(--tap);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0 1.25rem;
+  border-radius: var(--radius-pill);
+  border: 1.5px solid var(--edge);
+  background: var(--sheet);
+  font-weight: 500;
+  white-space: nowrap;
+  transition: background-color 150ms var(--ease-out), border-color 150ms var(--ease-out), transform 120ms var(--ease-out);
+}
+
+.tool:hover { background: var(--well); border-color: var(--ink-soft); }
+
+.tool--primary {
+  background: var(--ink);
+  border-color: var(--ink);
+  color: var(--sheet);
+  font-weight: 700;
+}
+.tool--primary:hover { background: #22324D; border-color: #22324D; }
+
+.icon {
+  width: 1.5rem;
+  height: 1.5rem;
+  flex: none;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.9;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* ---------- Suggestions ---------- */
+.suggestions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--gap);
+}
+
+@media (min-width: 40rem) {
+  .suggestions { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+}
+
+.suggestion {
+  min-height: 4.5rem;
+  padding: 0 1rem;
+  border-radius: var(--radius-tile);
+  border: 1.5px solid var(--edge);
+  background: var(--sheet);
+  font-weight: 700;
+  transition: background-color 150ms var(--ease-out), border-color 150ms var(--ease-out), transform 120ms var(--ease-out);
+}
+.suggestion:hover { border-color: var(--ink-soft); }
+
+/* Unused slots keep their space so the row never changes height */
+.suggestion[hidden] { display: block; visibility: hidden; }
+
+/* Quick social words, shown when the box is empty */
+.suggestion--social {
+  background: var(--social-tint);
+  border-color: color-mix(in srgb, var(--social-deep) 35%, transparent);
+}
+.suggestion--social:hover { border-color: var(--social-deep); }
+
+/* ---------- Sentence starters ---------- */
+.starter-list {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--gap);
+}
+
+@media (min-width: 40rem) and (max-width: 69.99rem) {
+  .starter-list { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+
+@media (min-width: 70rem) {
+  .starter-list { grid-template-columns: 1fr; }
+}
+
+.starter {
+  width: 100%;
+  min-height: 4.75rem;
+  display: flex;
+  align-items: center;
+  gap: 0.875rem;
+  padding: 0.5rem 1rem 0.5rem 0.5rem;
+  border-radius: var(--radius-tile);
+  border: 1.5px solid var(--edge);
+  background: var(--sheet);
+  font-weight: 700;
+  text-align: left;
+  white-space: nowrap;
+  transition: background-color 150ms var(--ease-out), border-color 150ms var(--ease-out), transform 120ms var(--ease-out);
+}
+.starter:hover { border-color: var(--ink-soft); }
+
+.starter-icon {
+  flex: none;
+  width: 3.5rem;
+  height: 3.5rem;
+  border-radius: 14px;
+  background: var(--well);
+  display: grid;
+  place-items: center;
+}
+.starter-icon img { width: 2rem; height: 2rem; }
+
+/* ---------- Category colors ---------- */
+[data-category="people"]   { --tint: var(--people-tint);   --deep: var(--people-deep); }
+[data-category="food"]     { --tint: var(--food-tint);     --deep: var(--food-deep); }
+[data-category="places"]   { --tint: var(--places-tint);   --deep: var(--places-deep); }
+[data-category="feelings"] { --tint: var(--feelings-tint); --deep: var(--feelings-deep); }
+[data-category="actions"]  { --tint: var(--actions-tint);  --deep: var(--actions-deep); }
+
+/* ---------- Category tabs ---------- */
+.categories {
+  display: flex;
+  gap: var(--gap);
+  overflow-x: auto;
+  scrollbar-width: none;
+  padding: 4px;            /* room for the focus ring inside the scroller */
+  margin: -4px;
+}
+.categories::-webkit-scrollbar { display: none; }
+
+@media (min-width: 70rem) {
+  .categories { flex-direction: column; overflow: visible; }
+}
+
+.category {
+  flex: none;
+  min-height: 4.75rem;
+  display: flex;
+  align-items: center;
+  gap: 0.875rem;
+  padding: 0.5rem 1.25rem 0.5rem 0.5rem;
+  border-radius: var(--radius-tile);
+  border: 1.5px solid transparent;
+  background: transparent;
+  font-weight: 500;
+  text-align: left;
+  transition: background-color 150ms var(--ease-out), border-color 150ms var(--ease-out);
+}
+.category:hover { background: color-mix(in srgb, var(--tint) 55%, transparent); }
+
+.category[aria-selected="true"] {
+  background: var(--tint);
+  border-color: var(--deep);
+  font-weight: 700;
+}
+
+/* ---------- Picture grid ---------- */
+.picture-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--gap);
+}
+
+@media (min-width: 40rem) {
+  .picture-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+}
+
+.picture {
+  width: 100%;
+  display: grid;
+  gap: 0.5rem;
+  padding: 0.5rem 0.5rem 0.75rem;
+  border-radius: var(--radius-tile);
+  border: 1.5px solid var(--edge);
+  background: var(--sheet);
+  font-weight: 700;
+  transition: border-color 150ms var(--ease-out), transform 120ms var(--ease-out);
+}
+.picture:hover { border-color: var(--deep); }
+
+.word { line-height: 1.2; }
+
+/* Picture slot. Shows a placeholder mark until an <img> is put inside. */
+.pic {
+  position: relative;
+  display: grid;
+  place-items: center;
+  aspect-ratio: 16 / 10;
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--tint, var(--well)) 70%, var(--sheet));
+  overflow: hidden;
+}
+
+.pic--small {
+  flex: none;
+  width: 3.5rem;
+  height: 3.5rem;
+  aspect-ratio: auto;
+  border-radius: 14px;
+}
+
+.pic img { width: 100%; height: 100%; object-fit: contain; }
+
+.pic::before {
+  content: "";
+  width: 2.25rem;
+  height: 2.25rem;
+  background: var(--deep, var(--ink-soft));
+  opacity: 0.5;
+  -webkit-mask: var(--placeholder-mark) center / contain no-repeat;
+          mask: var(--placeholder-mark) center / contain no-repeat;
+}
+.pic--small::before { width: 1.75rem; height: 1.75rem; }
+.pic:has(img)::before { display: none; }
+
+:root {
+  --placeholder-mark: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='3' y='4' width='18' height='16' rx='3'/%3E%3Ccircle cx='9' cy='10' r='2'/%3E%3Cpath d='m21 16-5-5-9 9'/%3E%3C/svg%3E");
+}
+
+/* ---------- Phones ----------
+   Read aloud gets its own row; the smaller buttons put the picture above
+   the word so the words never wrap. Kept after the base rules so it wins. */
+@media (max-width: 39.99rem) {
+  .toolbar { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .tool--primary { grid-column: 1 / -1; }
+  .tool:not(.tool--primary) {
+    flex-direction: column;
+    gap: 0.125rem;
+    min-height: 4.75rem;
+    padding: 0.5rem 0.25rem;
+    white-space: normal;           /* "Not copied" wraps instead of spilling out */
+    text-align: center;
+    line-height: 1.1;
+  }
+
+  .starter, .category {
+    flex-direction: column;
+    justify-content: center;
+    gap: 0.375rem;
+    padding: 0.625rem 0.25rem;
+    text-align: center;
+  }
+  .starter-icon, .pic--small { width: 3rem; height: 3rem; border-radius: 12px; }
+  .starter-icon img { width: 1.75rem; height: 1.75rem; }
+
+  .categories { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+
+/* Below the three-column layout, all five categories sit in one visible
+   grid (no sideways scrolling), picture above word. */
+@media (max-width: 69.99rem) {
+  .categories {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    overflow: visible;
+    margin: 0;
+    padding: 0;
+  }
+  .category {
+    flex-direction: column;
+    justify-content: center;
+    gap: 0.375rem;
+    padding: 0.625rem 0.25rem;
+    text-align: center;
+  }
+  .category:not([aria-selected="true"]) { border-color: var(--edge); background: var(--sheet); }
+}
+@media (max-width: 39.99rem) {
+  .categories { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+
+/* ---------- Press feedback (shared) ---------- */
+.tool:active, .suggestion:active, .starter:active, .picture:active {
+  transform: scale(0.97);
+}
+
+/* Tools with nothing to act on (empty box, nothing to undo). aria-disabled
+   keeps them focusable, so keyboard focus isn't lost after Clear. */
+.tool[aria-disabled="true"] {
+  cursor: default;
+  opacity: 0.45;
+}
+.tool[aria-disabled="true"]:hover { background: var(--sheet); border-color: var(--edge); }
+.tool--primary[aria-disabled="true"]:hover { background: var(--ink); border-color: var(--ink); }
+.tool[aria-disabled="true"]:active { transform: none; }
+
+/* Icon swaps: Read aloud ↔ Stop, Copy ↔ Copied */
+.icon--stop, .icon--done { display: none; }
+#read-aloud.is-active .icon--speak { display: none; }
+#read-aloud.is-active .icon--stop  { display: block; fill: currentColor; }
+#copy.is-done .icon--copy { display: none; }
+#copy.is-done .icon--done { display: block; }
+
+/* Copied: a calm confirmation in the actions green */
+#copy.is-done {
+  border-color: var(--actions-deep);
+  background: var(--actions-tint);
+}
+
+/* Windows high-contrast and other forced-color modes: colors are replaced,
+   so selection and confirmation need outlines the system will keep. */
+@media (forced-colors: active) {
+  .category[aria-selected="true"] { border: 3px solid Highlight; }
+  #copy.is-done { border: 3px solid Highlight; }
+  .typebox:focus-within { outline: 3px solid Highlight; }
+  .pic::before { background: CanvasText; }
+}
+
+/* ---------- Load error ---------- */
+.load-error {
+  grid-column: 1 / -1;
+  margin: 0;
+  padding: 1rem 1.25rem;
+  border-radius: var(--radius-tile);
+  background: var(--sheet);
+  border: 1.5px solid var(--food-deep);
+}
+.load-error code { font-size: 0.85em; }
+
+/* ---------- Page-load reveal ----------
+   One orchestrated moment, after Magic UI's Blur Fade: the type box arrives
+   first, the rails slide in from their own sides, the pictures follow. */
+@keyframes blur-in {
+  from { opacity: 0; filter: blur(6px); transform: translate(var(--from-x, 0), var(--from-y, 8px)); }
+  to   { opacity: 1; filter: blur(0);   transform: none; }
+}
+
+.reveal {
+  animation: blur-in 700ms var(--ease-out) var(--d, 0ms) both;
+}
+
+@media (min-width: 70rem) {
+  .reveal--from-left  { --from-x: -12px; --from-y: 0; }
+  .reveal--from-right { --from-x: 12px;  --from-y: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .reveal, .ai-dot { animation: none !important; }
+  *, *::before, *::after { transition-duration: 0.01ms !important; }
+}
