@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Setup · Writing Helper</title>
+  <meta name="theme-color" content="#F2F4F7">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible+Next:wght@400;500;700&display=swap">
+  <link rel="stylesheet" href="css/styles.css">
+  <script type="module" src="js/setup.js"></script>
+</head>
+<body class="setup">
+
+  <header class="masthead">
+    <p class="brand">Writing Helper</p>
+    <a class="tool" href="./">
+      <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M14.5 6.5 9 12l5.5 5.5"/></svg>
+      Back to writing
+    </a>
+  </header>
+
+  <main class="setup-main">
+    <h1 class="setup-title">Setup</h1>
+    <p class="setup-intro">For a speech therapist or family member. Add the names, photos and phrases this person uses most. Everything stays on this device; nothing is sent anywhere.</p>
+
+    <!-- PEOPLE ──────────────────────────────────────────── -->
+    <section class="setup-section" aria-labelledby="people-title">
+      <h2 id="people-title">People</h2>
+      <p class="setup-help">They appear first under People, with their photo, and after “Call” and “See”.</p>
+      <form class="setup-form" id="person-form">
+        <label class="field">
+          <span>Name</span>
+          <input type="text" id="person-name" maxlength="40" autocomplete="off" required placeholder="Sarah">
+        </label>
+        <label class="field">
+          <span>Photo (optional)</span>
+          <input type="file" id="person-photo" accept="image/*">
+        </label>
+        <button type="submit" class="tool tool--primary">Add person</button>
+      </form>
+      <ul class="setup-list" id="people-list" role="list"></ul>
+    </section>
+
+    <!-- PHRASES ─────────────────────────────────────────── -->
+    <section class="setup-section" aria-labelledby="phrases-setup-title">
+      <h2 id="phrases-setup-title">My phrases</h2>
+      <p class="setup-help">Whole messages sent often. One tap adds the whole phrase. Messages saved with “Save this message” show up here too.</p>
+      <form class="setup-form" id="phrase-form">
+        <label class="field field--wide">
+          <span>Phrase</span>
+          <input type="text" id="phrase-text" maxlength="200" autocomplete="off" required placeholder="See you at lunch.">
+        </label>
+        <button type="submit" class="tool tool--primary">Add phrase</button>
+      </form>
+      <ul class="setup-list" id="phrases-list" role="list"></ul>
+    </section>
+
+    <!-- APHASIA CARD ────────────────────────────────────── -->
+    <section class="setup-section" aria-labelledby="card-setup-title">
+      <h2 id="card-setup-title">About my aphasia card</h2>
+      <p class="setup-help">Shown full screen when the person taps “About my aphasia”, to show someone face to face. Saved as you type.</p>
+      <label class="field field--wide">
+        <span>Card text</span>
+        <textarea id="card-input" rows="4" maxlength="400"></textarea>
+      </label>
+      <button type="button" class="tool" id="card-reset">Use the standard text</button>
+    </section>
+
+    <!-- LAYOUT ──────────────────────────────────────────── -->
+    <section class="setup-section" aria-labelledby="layout-title">
+      <h2 id="layout-title">Layout</h2>
+      <fieldset class="choices">
+        <legend>On wide screens, put the starters and phrases on the</legend>
+        <label class="choice">
+          <input type="radio" name="side" value="left">
+          <span><strong>Left</strong> (recommended). A stroke on the left side of the brain often makes the right side of what someone sees hard to notice.</span>
+        </label>
+        <label class="choice">
+          <input type="radio" name="side" value="right">
+          <span><strong>Right</strong>, if the left side is harder to see or reach.</span>
+        </label>
+      </fieldset>
+    </section>
+
+    <!-- BACKUP ──────────────────────────────────────────── -->
+    <section class="setup-section" aria-labelledby="backup-title">
+      <h2 id="backup-title">Backup</h2>
+      <p class="setup-help">Save everything above to a file, to move it to another device or keep it safe if the browser is cleared.</p>
+      <div class="setup-actions">
+        <button type="button" class="tool" id="export">Save backup file</button>
+        <button type="button" class="tool" id="import">Load backup file</button>
+        <input type="file" id="import-file" accept="application/json,.json" hidden>
+      </div>
+    </section>
+
+    <p class="setup-status" id="status" role="status" aria-live="polite"></p>
+  </main>
+</body>
+</html>

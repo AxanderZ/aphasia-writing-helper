@@ -12,27 +12,40 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible+Next:wght@400;500;700&display=swap">
   <link rel="stylesheet" href="css/styles.css">
+  <!-- Apply the saved layout side before first paint, so the page doesn't jump. -->
+  <script>
+    try {
+      const side = JSON.parse(localStorage.getItem("writing-helper-profile") || "{}").side;
+      if (side === "right") document.documentElement.dataset.side = "right";
+    } catch {}
+  </script>
   <script type="module" src="js/app.js"></script>
 </head>
 <body>
 
   <!--
-    Layout (wide screens): the type box is in the center column.
-    Sentence starters sit in the left rail, where sentences begin.
-    Picture categories sit in the right rail; their pictures fill the space under the box.
-    On narrow screens everything stacks in source order:
-    type box → suggestions → starters → categories → pictures.
+    Layout (wide screens): a rail on the LEFT holds sentence starters and
+    saved phrases; the type box, core words, category tabs and pictures
+    fill the center. Nothing important sits at the right edge, because a
+    left-side stroke often leaves a blind area on the right side of what a
+    person sees. Setup can move the rail to the right (data-side="right").
+    On narrow screens everything stacks:
+    type box → suggestions → core words → starters → categories → pictures → phrases.
   -->
 
   <header class="masthead">
     <p class="brand">Writing Helper</p>
-    <!-- AI model state, set by app.js. The percentage is hidden from screen
-         readers so they announce "AI loading" and "AI ready" only once. -->
-    <p class="ai-status" id="ai-status" role="status" data-state="off">
-      <span class="ai-dot" aria-hidden="true"></span>
-      <span id="ai-label">Basic suggestions</span>
-      <span class="ai-progress" id="ai-progress" aria-hidden="true"></span>
-    </p>
+    <div class="masthead-end">
+      <!-- AI model state, set by app.js. The percentage is hidden from screen
+           readers so they announce "AI loading" and "AI ready" only once. -->
+      <p class="ai-status" id="ai-status" role="status" data-state="off">
+        <span class="ai-dot" aria-hidden="true"></span>
+        <span id="ai-label">Basic suggestions</span>
+        <span class="ai-progress" id="ai-progress" aria-hidden="true"></span>
+      </p>
+      <!-- For a speech therapist or family member: names, photos, phrases. -->
+      <a class="setup-link" href="setup.html">Setup</a>
+    </div>
   </header>
 
   <main class="stage">
@@ -53,6 +66,10 @@
             <svg class="icon icon--speak" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9.5v5h3.5L12 18.5v-13L7.5 9.5z"/><path d="M15.5 9a4 4 0 0 1 0 6M18 6.5a7.5 7.5 0 0 1 0 11"/></svg>
             <svg class="icon icon--stop" viewBox="0 0 24 24" aria-hidden="true"><rect x="6.5" y="6.5" width="11" height="11" rx="2"/></svg>
             <span class="tool-label">Read aloud</span>
+          </button>
+          <button type="button" class="tool tool--send" id="send">
+            <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 11.5 20 4l-6.5 16-2.5-6.5z"/><path d="m11 13.5 9-9.5"/></svg>
+            <span class="tool-label">Send</span>
           </button>
           <button type="button" class="tool" id="undo">
             <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6.5 4.5 11 9 15.5"/><path d="M5 11h9a4.75 4.75 0 0 1 0 9.5h-2"/></svg>
@@ -80,22 +97,47 @@
       <div class="suggestions reveal" style="--d: 90ms" id="suggestions" role="group" aria-label="Suggested words"></div>
     </section>
 
-    <!-- SENTENCE STARTERS (left rail), drawn from data/starters.json ── -->
-    <section class="starters reveal reveal--from-left" style="--d: 180ms" aria-labelledby="starters-title">
-      <h2 id="starters-title" class="sr-only">Sentence starters</h2>
-      <ul class="starter-list" id="starter-list" role="list"></ul>
+    <!-- CORE WORDS, drawn from data/core.json ───────────────────
+         The same small words in the same places every time, so they can
+         be found by position instead of by reading (AAC motor planning). -->
+    <section class="core reveal" style="--d: 140ms" aria-labelledby="core-title">
+      <h2 id="core-title" class="sr-only">Core words</h2>
+      <ul class="core-grid" id="core-list" role="list"></ul>
     </section>
 
+    <!-- LEFT RAIL: sentence starters, saved phrases, aphasia card ──── -->
+    <div class="rail reveal reveal--from-side" style="--d: 180ms">
+      <section class="starters" aria-labelledby="starters-title">
+        <h2 id="starters-title" class="sr-only">Sentence starters</h2>
+        <ul class="starter-list" id="starter-list" role="list"></ul>
+      </section>
+
+      <section class="phrases" aria-labelledby="phrases-title">
+        <h2 id="phrases-title" class="rail-title">My phrases</h2>
+        <ul class="phrase-list" id="phrase-list" role="list"></ul>
+        <button type="button" class="phrase-save" id="save-phrase">
+          <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+          Save this message
+        </button>
+      </section>
+
+      <button type="button" class="card-button" id="open-card">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="5.5" width="17" height="13" rx="2.5"/><path d="M7.5 10h9M7.5 14h5"/></svg>
+        About my aphasia
+      </button>
+    </div>
+
     <!-- IMAGE HELPER, drawn from data/categories.json ─────────
-         Category tabs go in the right rail; the selected category's
-         pictures go under the type box.
+         Category tabs sit above the selected category's pictures.
          Colors follow the Fitzgerald Key used on AAC boards:
          people yellow, nouns orange, descriptors blue, actions green.
          Places get violet so they don't share orange with food. -->
-    <h2 id="helper-title" class="sr-only">Picture words</h2>
-    <div class="categories reveal reveal--from-right" style="--d: 180ms" id="categories"
-         role="tablist" aria-labelledby="helper-title" aria-orientation="vertical"></div>
-    <div class="pictures reveal" style="--d: 260ms" id="pictures"></div>
+    <section class="helper" aria-labelledby="helper-title">
+      <h2 id="helper-title" class="sr-only">Picture words</h2>
+      <div class="categories reveal" style="--d: 220ms" id="categories"
+           role="tablist" aria-labelledby="helper-title" aria-orientation="horizontal"></div>
+      <div class="pictures reveal" style="--d: 260ms" id="pictures"></div>
+    </section>
 
     <!-- Shown only if the word lists can't be loaded. -->
     <p class="load-error" id="load-error" role="alert" hidden>
@@ -103,5 +145,39 @@
       <code>python3 -m http.server 8000</code>
     </p>
   </main>
+
+  <!-- "About my aphasia": a full-screen card to show someone face to face. -->
+  <dialog class="sheet card-sheet" id="card-dialog" aria-labelledby="card-text">
+    <p class="card-text" id="card-text"></p>
+    <div class="sheet-actions">
+      <button type="button" class="tool tool--primary" id="card-speak">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9.5v5h3.5L12 18.5v-13L7.5 9.5z"/><path d="M15.5 9a4 4 0 0 1 0 6M18 6.5a7.5 7.5 0 0 1 0 11"/></svg>
+        Read aloud
+      </button>
+      <button type="button" class="tool" id="card-close">Close</button>
+    </div>
+  </dialog>
+
+  <!-- Send, where the browser has no share sheet: pick an app. -->
+  <dialog class="sheet" id="send-dialog" aria-labelledby="send-title">
+    <h2 class="sheet-title" id="send-title">Send with</h2>
+    <div class="send-options">
+      <a class="tool" id="send-sms" href="sms:">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4.5 6.5a2 2 0 0 1 2-2h11a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-7l-4.5 3.5v-3.5a2 2 0 0 1-1.5-2z"/></svg>
+        Text message
+      </a>
+      <a class="tool" id="send-email" href="mailto:">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="5.5" width="17" height="13" rx="2"/><path d="m4 7 8 6 8-6"/></svg>
+        Email
+      </a>
+      <button type="button" class="tool" id="send-copy">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="8.5" y="8.5" width="11" height="11" rx="2.5"/><path d="M15.5 8.5v-2a2 2 0 0 0-2-2h-7a2 2 0 0 0-2 2v7a2 2 0 0 0 2 2h2"/></svg>
+        Copy, then paste it
+      </button>
+    </div>
+    <div class="sheet-actions">
+      <button type="button" class="tool" id="send-close">Close</button>
+    </div>
+  </dialog>
 </body>
 </html>

@@ -82,8 +82,8 @@ export function renderImageHelper(tablist, pictures, categories) {
     if (tab) select(tab);
   });
 
-  // Arrow keys move between tabs in both directions, since the tabs are a
-  // column on wide screens and a grid on narrow ones. Home/End jump to the ends.
+  // Arrow keys move between tabs in both directions, since on phones the
+  // tabs wrap into a grid. Home/End jump to the ends.
   tablist.addEventListener("keydown", (event) => {
     const i = tabs.indexOf(document.activeElement);
     if (i === -1) return;
@@ -96,24 +96,19 @@ export function renderImageHelper(tablist, pictures, categories) {
     event.preventDefault();
     select(tabs[(moves[event.key] + tabs.length) % tabs.length], { focus: true });
   });
-
-  // Keep aria-orientation in step with the layout.
-  const wide = window.matchMedia("(min-width: 70rem)");
-  const syncOrientation = () =>
-    tablist.setAttribute("aria-orientation", wide.matches ? "vertical" : "horizontal");
-  wide.addEventListener("change", syncOrientation);
-  syncOrientation();
 }
 
 /**
  * A picture slot. It shows the CSS placeholder until the image file
- * loads; if the file is missing, the placeholder simply stays.
+ * loads; if the file is missing (or there is none), the placeholder stays.
+ * src can be a file path or a photo from Setup (a data: URL).
  */
 function picSlot(src, className) {
   const slot = document.createElement("span");
   slot.className = className;
-  slot.dataset.src = src;
   slot.setAttribute("aria-hidden", "true");
+  if (!src) return slot;
+  if (!src.startsWith("data:")) slot.dataset.src = src;
 
   const img = new Image();
   img.alt = "";

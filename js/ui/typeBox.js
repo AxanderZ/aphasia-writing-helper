@@ -1,8 +1,12 @@
-// typeBox.js: the message box and its tools (Read aloud, Undo, Clear, Copy).
+// typeBox.js: the message box and its tools (Read aloud, Send, Undo,
+// Clear, Copy).
 //
 // Typing goes to state.setText(); every state change is drawn back into
 // the box. Read aloud uses the browser's speechSynthesis and Copy uses
-// navigator.clipboard. Both stay in the browser.
+// navigator.clipboard. Both stay in the browser. Send hands the message
+// to the device's own share sheet (Messages, WhatsApp, Mail…) only when
+// the person taps it; where there is no share sheet it offers a text
+// message, an email or Copy.
 //
 // Tools with nothing to act on are marked aria-disabled rather than
 // disabled, so a keyboard user who just pressed Clear keeps focus on it
@@ -14,19 +18,15 @@ const FEEDBACK_MS = 2000;        // how long "Copied" stays on the button
 
 /**
  * @param {{ textarea: HTMLTextAreaElement, readAloud: HTMLButtonElement,
- *   undo: HTMLButtonElement, clear: HTMLButtonElement, copy: HTMLButtonElement,
- *   announcer: HTMLElement }} parts
- *   announcer is a visually hidden live region for short spoken updates.
+ *   send: HTMLButtonElement, undo: HTMLButtonElement, clear: HTMLButtonElement,
+ *   copy: HTMLButtonElement, announce: (message: string) => void,
+ *   sendDialog: { dialog: HTMLDialogElement, sms: HTMLAnchorElement,
+ *     email: HTMLAnchorElement, copy: HTMLButtonElement, close: HTMLButtonElement } }} parts
+ *   announce speaks a short update through a hidden live region.
  */
-export function initTypeBox({ textarea, readAloud, undo, clear, copy, announcer }) {
+export function initTypeBox({ textarea, readAloud, send, undo, clear, copy, announce, sendDialog }) {
   const label = (button) => button.querySelector(".tool-label");
   const isOff = (button) => button.getAttribute("aria-disabled") === "true";
-  const announce = (message) => {
-    announcer.textContent = "";
-    // Emptying first, then filling a moment later, makes screen readers
-    // announce a repeat ("Copied" twice in a row).
-    setTimeout(() => { announcer.textContent = message; }, 100);
-  };
 
   // ---------- typing ----------
   textarea.addEventListener("input", () => state.setText(textarea.value));
@@ -99,6 +99,37 @@ export function initTypeBox({ textarea, readAloud, undo, clear, copy, announcer 
     }, FEEDBACK_MS);
   });
 
+  // ---------- Send ----------
+  send.addEventListener("click", async () => {
+    const message = state.getText().trim();
+    if (!message || isOff(send)) return;
+    if (navigator.share) {
+      try {
+        await navigator.share({ text: message });
+        return;
+      } catch (error) {
+        if (error?.name === "AbortError") return;        // the person closed the share sheet
+        // Otherwise fall back to the choices below.
+      }
+    }
+    sendDialog.sms.href = `sms:?&body=${encodeURIComponent(message)}`;
+    sendDialog.email.href = `mailto:?body=${encodeURIComponent(message)}`;
+    sendDialog.dialog.showModal();
+  });
+
+  sendDialog.copy.addEventListener("click", async () => {
+    const ok = await copyText(state.getText().trim());
+    sendDialog.copy.lastChild.textContent = ok ? " Copied. Now paste it in your app." : " Not copied";
+    announce(ok ? "Copied. Now paste it in your message app." : "Not copied");
+  });
+  // Close goes back to Send. The close event covers the Escape key too.
+  const sendDone = () => {
+    sendDialog.copy.lastChild.textContent = " Copy, then paste it";
+    send.focus();
+  };
+  sendDialog.close.addEventListener("click", () => { sendDialog.dialog.close(); sendDone(); });
+  sendDialog.dialog.addEventListener("close", sendDone);
+
   // ---------- redraw on every change ----------
   state.subscribe((text) => {
     if (textarea.value !== text) {
@@ -116,6 +147,7 @@ export function initTypeBox({ textarea, readAloud, undo, clear, copy, announcer 
     setOff(clear, text === "");
     setOff(readAloud, empty && !speaking);
     setOff(copy, empty);
+    setOff(send, empty);
   }
 
   syncTools(state.getText());
@@ -126,7 +158,7 @@ function setOff(button, off) {
 }
 
 /** Copy with the Clipboard API, falling back to the older copy command. */
-async function copyText(text) {
+export async function copyText(text) {
   try {
     await navigator.clipboard.writeText(text);
     return true;

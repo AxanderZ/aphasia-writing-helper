@@ -20,10 +20,14 @@ const FIRST_LETTER_PENALTY = 0.3;
  * @returns {(typed: string, limit?: number) => string[]}
  */
 export function createSpellingMatcher(words) {
-  const entries = [...new Set(words.map((w) => w.toLowerCase()))].map((word, order) => ({
+  // Matching ignores case; names keep their capitals in the result ("sar" → Sarah).
+  const shown = new Map();
+  for (const w of words) if (!shown.has(w.toLowerCase())) shown.set(w.toLowerCase(), w);
+  const entries = [...shown.keys()].map((word, order) => ({
     word,
+    show: shown.get(word),
     key: soundKey(word),
-    order,                       // earlier in vocab.json wins ties
+    order,                       // earlier in the list wins ties
   }));
 
   return function match(typed, limit = 4) {
@@ -33,18 +37,18 @@ export function createSpellingMatcher(words) {
     const threshold = Math.max(0.5, t.length / 2);
 
     const scored = [];
-    for (const { word, key, order } of entries) {
+    for (const { word, show, key, order } of entries) {
       let score = Math.min(
         editDistance(t, word),
         editDistance(t, word.slice(0, t.length)) + PREFIX_COST,
         editDistance(tKey, key) + SOUND_COST,
       );
       if (t[0] !== word[0]) score += FIRST_LETTER_PENALTY;
-      if (score <= threshold) scored.push({ word, score, order });
+      if (score <= threshold) scored.push({ show, score, order });
     }
 
     scored.sort((a, b) => a.score - b.score || a.order - b.order);
-    return scored.slice(0, limit).map((s) => s.word);
+    return scored.slice(0, limit).map((s) => s.show);
   };
 }
 

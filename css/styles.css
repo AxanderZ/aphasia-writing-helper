@@ -38,7 +38,7 @@
   --radius-pill: 999px;
   --tap:   4rem;        /* 64px minimum target height */
   --gap:   0.75rem;     /* between buttons */
-  --rail:  14rem;       /* left and right rail width */
+  --rail:  16rem;       /* starters and phrases rail width */
 
   --shadow-box: 0 1px 2px rgb(21 35 58 / 0.06), 0 24px 48px -24px rgb(21 35 58 / 0.28);
   --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
@@ -136,7 +136,7 @@ img { display: block; max-width: 100%; }
 .stage {
   flex: 1;
   width: 100%;
-  max-width: 90rem;
+  max-width: 82rem;
   margin: 0 auto;
   padding: 0.5rem clamp(1rem, 3vw, 2.5rem) 3rem;
   display: grid;
@@ -145,29 +145,54 @@ img { display: block; max-width: 100%; }
   grid-template-columns: minmax(0, 1fr);
   grid-template-areas:
     "compose"
-    "starters"
-    "categories"
-    "pictures";
+    "core"
+    "rail"
+    "helper";
   align-content: start;
 }
 
-.compose    { grid-area: compose; }
-.starters   { grid-area: starters; }
-.categories { grid-area: categories; }
-.pictures   { grid-area: pictures; }
+.compose { grid-area: compose; }
+.core    { grid-area: core; }
+.rail    { grid-area: rail; }
+.helper  { grid-area: helper; }
 
-/* Wide: starters | type box + pictures | categories */
+/* Wide: the rail on the left, everything else in one center column.
+   Nothing important sits at the right edge, where a left-side stroke
+   often leaves a blind area. Setup can flip the rail to the right. */
 @media (min-width: 70rem) {
   .stage {
-    grid-template-columns: var(--rail) minmax(0, 1fr) var(--rail);
+    grid-template-columns: var(--rail) minmax(0, 1fr);
+    /* The rail can be taller than the center: the last row takes the
+       spare height so the center column stays packed together. */
+    grid-template-rows: auto auto 1fr;
     grid-template-areas:
-      "starters compose  categories"
-      "starters pictures categories";
+      "rail compose"
+      "rail core"
+      "rail helper";
     column-gap: clamp(1.5rem, 3vw, 3rem);
-    row-gap: 1.75rem;
-    align-content: center;
+    row-gap: 1.5rem;
   }
-  .starters, .categories { align-self: start; }
+  .rail { align-self: start; }
+
+  [data-side="right"] .stage {
+    grid-template-columns: minmax(0, 1fr) var(--rail);
+    grid-template-areas:
+      "compose rail"
+      "core    rail"
+      "helper  rail";
+  }
+}
+
+.rail {
+  display: grid;
+  gap: 1.5rem;
+  align-content: start;
+}
+
+.helper {
+  display: grid;
+  gap: 1rem;
+  align-content: start;
 }
 
 /* ---------- Type box ---------- */
@@ -234,9 +259,10 @@ img { display: block; max-width: 100%; }
   gap: var(--gap);
 }
 
+/* Read aloud and Send lead; Undo, Clear, Copy follow, set apart. */
 @media (min-width: 40rem) {
   .toolbar { display: flex; flex-wrap: wrap; }
-  .tool--primary { margin-right: auto; }
+  .tool--send { margin-right: auto; }
 }
 
 .tool {
@@ -263,6 +289,14 @@ img { display: block; max-width: 100%; }
   font-weight: 700;
 }
 .tool--primary:hover { background: #22324D; border-color: #22324D; }
+
+/* Send: the step the message is for, so it's strong but doesn't compete
+   with Read aloud's dark fill. */
+.tool--send {
+  border: 2px solid var(--ink);
+  font-weight: 700;
+}
+.tool--send:hover { border-color: var(--ink); }
 
 .icon {
   width: 1.5rem;
@@ -357,36 +391,29 @@ img { display: block; max-width: 100%; }
 [data-category="feelings"] { --tint: var(--feelings-tint); --deep: var(--feelings-deep); }
 [data-category="actions"]  { --tint: var(--actions-tint);  --deep: var(--actions-deep); }
 
-/* ---------- Category tabs ---------- */
+/* ---------- Category tabs ----------
+   One visible row of five above the pictures (three per row on phones):
+   no sideways scrolling, nothing hidden off screen. */
 .categories {
-  display: flex;
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
   gap: var(--gap);
-  overflow-x: auto;
-  scrollbar-width: none;
-  padding: 4px;            /* room for the focus ring inside the scroller */
-  margin: -4px;
-}
-.categories::-webkit-scrollbar { display: none; }
-
-@media (min-width: 70rem) {
-  .categories { flex-direction: column; overflow: visible; }
 }
 
 .category {
-  flex: none;
   min-height: 4.75rem;
   display: flex;
   align-items: center;
   gap: 0.875rem;
   padding: 0.5rem 1.25rem 0.5rem 0.5rem;
   border-radius: var(--radius-tile);
-  border: 1.5px solid transparent;
-  background: transparent;
+  border: 1.5px solid var(--edge);
+  background: var(--sheet);
   font-weight: 500;
   text-align: left;
   transition: background-color 150ms var(--ease-out), border-color 150ms var(--ease-out);
 }
-.category:hover { background: color-mix(in srgb, var(--tint) 55%, transparent); }
+.category:hover { background: color-mix(in srgb, var(--tint) 55%, var(--sheet)); }
 
 .category[aria-selected="true"] {
   background: var(--tint);
@@ -461,9 +488,11 @@ img { display: block; max-width: 100%; }
    Read aloud gets its own row; the smaller buttons put the picture above
    the word so the words never wrap. Kept after the base rules so it wins. */
 @media (max-width: 39.99rem) {
-  .toolbar { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-  .tool--primary { grid-column: 1 / -1; }
-  .tool:not(.tool--primary) {
+  /* Read aloud and Send share the first row; Undo, Clear, Copy the second. */
+  .toolbar { grid-template-columns: repeat(6, minmax(0, 1fr)); }
+  .toolbar .tool { grid-column: span 2; }
+  .toolbar .tool--primary, .toolbar .tool--send { grid-column: span 3; }
+  .toolbar .tool {
     flex-direction: column;
     gap: 0.125rem;
     min-height: 4.75rem;
@@ -484,18 +513,21 @@ img { display: block; max-width: 100%; }
   .starter-icon img { width: 1.75rem; height: 1.75rem; }
 
   .categories { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+
+  /* Header: brand, AI dot + percentage, Setup on one line. The words
+     "AI loading" / "AI ready" stay available to screen readers. */
+  .brand { white-space: nowrap; }
+  #ai-label {
+    position: absolute;
+    width: 1px; height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+  }
 }
 
-/* Below the three-column layout, all five categories sit in one visible
-   grid (no sideways scrolling), picture above word. */
+/* Below the wide layout the tabs are narrower: picture above word. */
 @media (max-width: 69.99rem) {
-  .categories {
-    display: grid;
-    grid-template-columns: repeat(5, minmax(0, 1fr));
-    overflow: visible;
-    margin: 0;
-    padding: 0;
-  }
   .category {
     flex-direction: column;
     justify-content: center;
@@ -503,14 +535,273 @@ img { display: block; max-width: 100%; }
     padding: 0.625rem 0.25rem;
     text-align: center;
   }
-  .category:not([aria-selected="true"]) { border-color: var(--edge); background: var(--sheet); }
-}
-@media (max-width: 39.99rem) {
-  .categories { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 }
 
+/* ---------- Header end: AI status + Setup ---------- */
+.masthead-end {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+}
+
+.setup-link {
+  min-height: 3rem;
+  display: inline-flex;
+  align-items: center;
+  padding: 0 0.25rem;
+  font-size: var(--size-meta);
+  color: var(--ink-soft);
+  text-underline-offset: 0.2em;
+}
+.setup-link:hover { color: var(--ink); }
+
+/* ---------- Core words ----------
+   Fixed positions, colored by the Fitzgerald Key: people and pronouns
+   yellow, actions green, describing words blue. */
+.core-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.5rem;
+}
+
+@media (min-width: 40rem) {
+  .core-grid { grid-template-columns: repeat(6, minmax(0, 1fr)); }
+}
+
+.core-word {
+  width: 100%;
+  min-height: var(--tap);
+  padding: 0 0.5rem;
+  border-radius: 14px;
+  border: 1.5px solid color-mix(in srgb, var(--deep) 40%, transparent);
+  background: var(--tint);
+  font-weight: 700;
+  transition: border-color 150ms var(--ease-out), transform 120ms var(--ease-out);
+}
+.core-word:hover { border-color: var(--deep); }
+
+.core-word[data-type="pronoun"]    { --tint: var(--people-tint);   --deep: var(--people-deep); }
+.core-word[data-type="action"]     { --tint: var(--actions-tint);  --deep: var(--actions-deep); }
+.core-word[data-type="describing"] { --tint: var(--feelings-tint); --deep: var(--feelings-deep); }
+
+/* ---------- Rail: titles, phrases, aphasia card ---------- */
+.phrases {
+  display: grid;
+  gap: var(--gap);
+}
+
+.rail-title {
+  margin: 0.25rem 0 0;
+  font-size: var(--size-meta);
+  font-weight: 700;
+  color: var(--ink-soft);
+}
+
+.phrase-list {
+  display: grid;
+  gap: var(--gap);
+}
+
+@media (min-width: 40rem) and (max-width: 69.99rem) {
+  .phrase-list { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+.phrase {
+  width: 100%;
+  min-height: var(--tap);
+  padding: 0.75rem 1rem;
+  border-radius: var(--radius-tile);
+  border: 1.5px solid var(--edge);
+  background: var(--sheet);
+  font-weight: 500;
+  line-height: 1.25;
+  text-align: left;
+  transition: border-color 150ms var(--ease-out), transform 120ms var(--ease-out);
+}
+.phrase:hover { border-color: var(--ink-soft); }
+
+.phrase-save, .card-button {
+  min-height: var(--tap);
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  padding: 0 1rem;
+  border-radius: var(--radius-tile);
+  font-weight: 700;
+  text-align: left;
+}
+
+.phrase-save {
+  border: 1.5px dashed var(--ink-soft);
+  background: transparent;
+}
+.phrase-save:hover { background: var(--well); }
+.phrase-save[aria-disabled="true"] { opacity: 0.45; cursor: default; }
+.phrase-save[aria-disabled="true"]:hover { background: transparent; }
+.phrase-save.is-done { border-style: solid; border-color: var(--actions-deep); background: var(--actions-tint); }
+
+.card-button {
+  border: 1.5px solid var(--social-deep);
+  background: var(--social-tint);
+}
+
+/* ---------- Dialogs: aphasia card, Send ---------- */
+.sheet {
+  width: min(44rem, calc(100vw - 2rem));
+  max-height: calc(100dvh - 2rem);
+  padding: clamp(1.25rem, 4vw, 2.5rem);
+  border: 2px solid var(--ink);
+  border-radius: var(--radius-box);
+  background: var(--sheet);
+  color: var(--ink);
+  box-shadow: var(--shadow-box);
+}
+.sheet::backdrop { background: rgb(21 35 58 / 0.55); }
+
+.sheet-title {
+  margin: 0 0 1.25rem;
+  font-size: var(--size-box);
+}
+
+.sheet-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--gap);
+  margin-top: 1.5rem;
+}
+
+/* The aphasia card is meant to be held up and read by someone else. */
+.card-sheet { width: min(56rem, calc(100vw - 2rem)); }
+.card-text {
+  margin: 0;
+  font-size: clamp(2rem, 1.2rem + 3vw, 3.25rem);
+  font-weight: 700;
+  line-height: 1.25;
+  white-space: pre-line;
+}
+
+.send-options {
+  display: grid;
+  gap: var(--gap);
+}
+.send-options .tool {
+  justify-content: flex-start;
+  border-radius: var(--radius-tile);
+  color: var(--ink);
+  text-decoration: none;
+}
+
+/* ---------- Setup page ---------- */
+.setup .masthead .tool { text-decoration: none; color: var(--ink); }
+
+.setup-main {
+  width: 100%;
+  max-width: 48rem;
+  margin: 0 auto;
+  padding: 0 clamp(1rem, 3vw, 2.5rem) 4rem;
+  display: grid;
+  gap: 1.5rem;
+}
+
+.setup-title { margin: 0; font-size: var(--size-box); }
+.setup-intro, .setup-help { margin: 0; color: var(--ink-soft); }
+
+.setup-section {
+  display: grid;
+  gap: 1rem;
+  padding: clamp(1.25rem, 3vw, 1.75rem);
+  border-radius: var(--radius-box);
+  border: 1.5px solid var(--edge);
+  background: var(--sheet);
+}
+.setup-section h2 { margin: 0; font-size: 1.625rem; }
+
+.setup-form {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: var(--gap);
+}
+
+.field {
+  display: grid;
+  gap: 0.375rem;
+  flex: 1 1 14rem;
+  font-weight: 700;
+}
+.field--wide { flex-basis: 100%; }
+
+.field input[type="text"], .field textarea {
+  width: 100%;
+  min-height: var(--tap);
+  padding: 0.75rem 1rem;
+  border-radius: 14px;
+  border: 1.5px solid var(--ink-soft);
+  background: var(--sheet);
+  font: inherit;
+  font-weight: 500;
+  color: var(--ink);
+}
+.field textarea { resize: vertical; line-height: 1.35; }
+.field input::placeholder { color: var(--placeholder); opacity: 1; }
+.field input[type="file"] { min-height: var(--tap); font: inherit; font-size: var(--size-meta); font-weight: 500; }
+.field input[type="file"]::file-selector-button {
+  min-height: 3.25rem;
+  margin-right: 0.75rem;
+  padding: 0 1rem;
+  border-radius: var(--radius-pill);
+  border: 1.5px solid var(--edge);
+  background: var(--well);
+  font: inherit;
+  cursor: pointer;
+}
+
+.setup-list { display: grid; gap: 0.5rem; }
+
+.setup-item {
+  display: flex;
+  align-items: center;
+  gap: 0.875rem;
+  padding: 0.5rem 0.5rem 0.5rem 0.75rem;
+  border-radius: var(--radius-tile);
+  background: var(--paper);
+}
+.setup-item-text { flex: 1; min-width: 0; overflow-wrap: anywhere; }
+.setup-thumb {
+  flex: none;
+  width: 3.5rem;
+  height: 3.5rem;
+  border-radius: 12px;
+  overflow: hidden;
+  display: grid;
+  place-items: center;
+  background: var(--people-tint);
+  color: var(--people-deep);
+  font-weight: 700;
+}
+.setup-thumb img { width: 100%; height: 100%; object-fit: cover; }
+.setup-empty { color: var(--ink-soft); }
+
+.choices { margin: 0; padding: 0; border: 0; display: grid; gap: var(--gap); }
+.choices legend { padding: 0; margin-bottom: 0.75rem; font-weight: 700; }
+.choice {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.875rem;
+  padding: 1rem;
+  border-radius: var(--radius-tile);
+  border: 1.5px solid var(--edge);
+  cursor: pointer;
+}
+.choice:has(input:checked) { border-color: var(--ink); background: var(--well); }
+.choice input { flex: none; width: 1.75rem; height: 1.75rem; margin: 0.125rem 0 0; accent-color: var(--ink); }
+
+.setup-actions { display: flex; flex-wrap: wrap; gap: var(--gap); }
+.setup-status { margin: 0; min-height: 1.5em; font-weight: 700; }
+
 /* ---------- Press feedback (shared) ---------- */
-.tool:active, .suggestion:active, .starter:active, .picture:active {
+.tool:active, .suggestion:active, .starter:active, .picture:active,
+.core-word:active, .phrase:active, .phrase-save:active, .card-button:active {
   transform: scale(0.97);
 }
 
@@ -541,7 +832,8 @@ img { display: block; max-width: 100%; }
    so selection and confirmation need outlines the system will keep. */
 @media (forced-colors: active) {
   .category[aria-selected="true"] { border: 3px solid Highlight; }
-  #copy.is-done { border: 3px solid Highlight; }
+  #copy.is-done, .phrase-save.is-done { border: 3px solid Highlight; }
+  .core-word, .card-button { border: 2px solid ButtonText; }
   .typebox:focus-within { outline: 3px solid Highlight; }
   .pic::before { background: CanvasText; }
 }
@@ -559,7 +851,7 @@ img { display: block; max-width: 100%; }
 
 /* ---------- Page-load reveal ----------
    One orchestrated moment, after Magic UI's Blur Fade: the type box arrives
-   first, the rails slide in from their own sides, the pictures follow. */
+   first, the rail slides in from its side, the pictures follow. */
 @keyframes blur-in {
   from { opacity: 0; filter: blur(6px); transform: translate(var(--from-x, 0), var(--from-y, 8px)); }
   to   { opacity: 1; filter: blur(0);   transform: none; }
@@ -570,8 +862,8 @@ img { display: block; max-width: 100%; }
 }
 
 @media (min-width: 70rem) {
-  .reveal--from-left  { --from-x: -12px; --from-y: 0; }
-  .reveal--from-right { --from-x: 12px;  --from-y: 0; }
+  .reveal--from-side { --from-x: -12px; --from-y: 0; }
+  [data-side="right"] .reveal--from-side { --from-x: 12px; }
 }
 
 @media (prefers-reduced-motion: reduce) {

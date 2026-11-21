@@ -1,0 +1,14 @@
+[
+  { "word": "I",    "type": "pronoun" },
+  { "word": "you",  "type": "pronoun" },
+  { "word": "my",   "type": "pronoun" },
+  { "word": "want", "type": "action" },
+  { "word": "need", "type": "action" },
+  { "word": "like", "type": "action" },
+  { "word": "go",   "type": "action" },
+  { "word": "help", "type": "action" },
+  { "word": "stop", "type": "action" },
+  { "word": "is",   "type": "action" },
+  { "word": "more", "type": "describing" },
+  { "word": "not",  "type": "describing" }
+]

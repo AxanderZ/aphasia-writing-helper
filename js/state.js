@@ -85,6 +85,13 @@ export function setText(value) {
   notify("type");
 }
 
+/** Put back a message kept from before a page reload. Not an undo step. */
+export function restore(value) {
+  if (typeof value !== "string" || value === text) return;
+  text = value;
+  notify("restore");
+}
+
 /** Go back one step. */
 export function undo() {
   if (!history.length) return;
